@@ -1,23 +1,44 @@
 from flet import *
-
+from model import Encomendas
 
 def main(page: Page):
 
-    def salvar(e):
-        table.rows.append(
-            DataRow(
-                cells=[
-                    DataCell(Text(id.value)),
-                    DataCell(Text(evento.value)),
-                    DataCell(Text(cliente.value)),
-                    DataCell(Text(data.value)),
-                    DataCell(Text(cerimonial.value)),
-                    DataCell(Text(local.value)),
-                    DataCell(Text(horario.value))
-                ]
+    def update_table():
+        enc = Encomendas.select()
+        for i in enc:
+            table.rows.append(
+                DataRow(
+                    cells=[
+                        DataCell(Text(i.id)),
+                        DataCell(Text(i.evento)),
+                        DataCell(Text(i.cliente)),
+                        DataCell(Text(i.data)),
+                        DataCell(Text(i.cerimonial)),
+                        DataCell(Text(i.local)),
+                        DataCell(Text(i.horario)),
+                        DataCell(btn_delete)
+                    ]
+                )
             )
-        )
         page.update()
+    
+    def db_save(e):
+        table.rows.clear()
+        table.update()
+        Encomendas.create(
+            evento= evento.value,
+            cliente= cliente.value,
+            data= data.value,
+            cerimonial= cerimonial.value,
+            local= local.value,
+            horario= horario.value
+        )
+        update_table()
+    
+    
+    def remover(e):
+        table.rows.clear()
+        table.update()
         
     # TITULO
     titulo = Text('TESTANDO FORMULARIO')
@@ -31,7 +52,8 @@ def main(page: Page):
             DataColumn(Text('Data')),
             DataColumn(Text('Cerimonia')),
             DataColumn(Text('Local')),
-            DataColumn(Text('Horario'))     
+            DataColumn(Text('Horario')),
+            DataColumn(Text('Ações'))
         ],
         rows=[]
     )
@@ -46,7 +68,8 @@ def main(page: Page):
     horario = TextField(label='Horário', width=400)
 
     # BOTÕES
-    btn_save = ElevatedButton('+', on_click=salvar)
+    btn_save = ElevatedButton('+', on_click=db_save)
+    btn_delete = IconButton(icon='delete', on_click=remover)
 
     page.add(
         titulo,
@@ -60,9 +83,11 @@ def main(page: Page):
                 local,
                 horario,
                 btn_save
-        ]
-        ), table
+            ]
+        ),
+        table
     )
+    update_table()
 
 
 app(target=main)
