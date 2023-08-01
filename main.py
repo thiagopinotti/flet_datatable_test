@@ -3,6 +3,8 @@ from model import Encomendas
 
 def main(page: Page):
 
+    page.theme_mode = 'light'
+
     def update_table():
         enc = Encomendas.select()
         for i in enc:
@@ -16,10 +18,14 @@ def main(page: Page):
                         DataCell(Text(i.cerimonial)),
                         DataCell(Text(i.local)),
                         DataCell(Text(i.horario)),
-                        DataCell(btn_delete)
+                        DataCell(IconButton(icon='delete', data=i, on_click=remover))
                     ]
                 )
             )
+        page.update()
+
+    def clean_textfields():
+        evento.value = cliente.value = data.value = cerimonial.value = local.value = horario.value = ''
         page.update()
     
     def db_save(e):
@@ -34,17 +40,22 @@ def main(page: Page):
             horario= horario.value
         )
         update_table()
-    
+        evento.focus()
+        clean_textfields()
     
     def remover(e):
+        id = e.control.data
+        Encomendas.delete_by_id(id)
         table.rows.clear()
-        table.update()
+        update_table()
         
     # TITULO
     titulo = Text('TESTANDO FORMULARIO')
 
     # TABELA
     table = DataTable(
+        height=300,
+        border= border.all(2, "black"),
         columns=[
             DataColumn(Text('ID')),
             DataColumn(Text('Evento')),
@@ -59,7 +70,7 @@ def main(page: Page):
     )
 
     # TEXTFIELDS
-    id = TextField(label='ID', width=50)
+    # id = TextField(label='ID', width=50)
     evento = TextField(label='Evento', width=300)
     cliente = TextField(label='Cliente', width=400)
     data = TextField(label='Data', width=400)
@@ -69,13 +80,11 @@ def main(page: Page):
 
     # BOTÕES
     btn_save = ElevatedButton('+', on_click=db_save)
-    btn_delete = IconButton(icon='delete', on_click=remover)
 
     page.add(
         titulo,
         Row(wrap=True,
             controls=[
-                id,
                 evento,
                 cliente,
                 data,
